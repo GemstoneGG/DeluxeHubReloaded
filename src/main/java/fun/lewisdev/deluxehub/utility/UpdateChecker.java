@@ -1,5 +1,8 @@
 package fun.lewisdev.deluxehub.utility;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import fun.lewisdev.deluxehub.Permissions;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -18,23 +21,17 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 
-/*
-   Credits: Benz56
-   https://www.spigotmc.org/threads/async-update-checker-for-premium-and-regular-plugins.327921/
- */
 public class UpdateChecker {
 
     private final JavaPlugin plugin;
     private final String localPluginVersion;
-    private String spigotPluginVersion;
-
-    private static final int ID = 118904;
+	private final Gson gson = new Gson();
     private static final Permission UPDATE_PERM = new Permission(Permissions.UPDATE_NOTIFICATION.getPermission(), PermissionDefault.FALSE);
     private static final long CHECK_INTERVAL = 12_000;
 
     public UpdateChecker(JavaPlugin plugin) {
         this.plugin = plugin;
-        this.localPluginVersion = plugin.getDescription().getVersion();
+        this.localPluginVersion = "v"+plugin.getDescription().getVersion();
     }
 
     public void checkForUpdate() {
@@ -42,19 +39,25 @@ public class UpdateChecker {
             @Override
             public void run() {
                 Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-                    try {
-                        final HttpsURLConnection connection = (HttpsURLConnection) new URL("https://api.spigotmc.org/legacy/update.php?resource=" + ID).openConnection();
+                    String raw;
+					try {
+                        final HttpsURLConnection connection = (HttpsURLConnection) new URL("https://api.github.com/repos/Strafbefehl/DeluxeHubReloaded/releases").openConnection();
                         connection.setRequestMethod("GET");
-                        spigotPluginVersion = new BufferedReader(new InputStreamReader(connection.getInputStream())).readLine();
+						raw = new BufferedReader(new InputStreamReader(connection.getInputStream())).readLine();
                     } catch (IOException e) {
-                        e.printStackTrace();
                         cancel();
                         return;
                     }
-                    if (localPluginVersion.equals(spigotPluginVersion)) return;
+					JsonArray ghData = gson.fromJson(raw, JsonArray.class);
+					JsonObject latest = ghData.get(0).getAsJsonObject();
 
-                    plugin.getLogger().info("An update for DeluxeHubReloaded (v%VERSION%) is available at:".replace("%VERSION%", spigotPluginVersion));
-                    plugin.getLogger().info("https://www.spigotmc.org/resources/" + ID);
+					final String version = latest.get("tag_name").getAsString();
+					final String URL = latest.get("html_url").getAsString();
+
+					if (localPluginVersion.equals(version)) return;
+
+                    plugin.getLogger().warning("An update for DeluxeHubReloaded (%VERSION%) is available at:".replace("%VERSION%", version));
+                    plugin.getLogger().warning(URL);
 
                     Bukkit.getScheduler().runTask(plugin, () -> Bukkit.getPluginManager().registerEvents(new Listener() {
                         @EventHandler(priority = EventPriority.MONITOR)
@@ -62,12 +65,11 @@ public class UpdateChecker {
                             final Player player = event.getPlayer();
                             if (!player.hasPermission(UPDATE_PERM)) return;
 
-                            // Delay the message by 3 seconds
                             new BukkitRunnable() {
                                 @Override
                                 public void run() {
-                                    player.sendMessage(TextUtil.color("&7An update (v%VERSION%) for DeluxeHubReloaded is available at:".replace("%VERSION%", spigotPluginVersion)));
-                                    player.sendMessage(TextUtil.color("&6https://www.spigotmc.org/resources/" + ID));
+                                    player.sendMessage(TextUtil.color("&7An update (%VERSION%) for DeluxeHubReloaded is available at:".replace("%VERSION%", version)));
+                                    player.sendMessage(TextUtil.color(URL));
                                 }
                             }.runTaskLater(plugin, 60L); // 60 ticks = 3 seconds
                         }
