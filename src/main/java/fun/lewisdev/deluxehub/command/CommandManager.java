@@ -39,7 +39,7 @@ public class CommandManager {
 
         commandRegistry.register(DeluxeHubCommand.class);
 
-        for (String command : config.getConfigurationSection("commands").getKeys(false)) {
+        for (String command : Objects.requireNonNull(config.getConfigurationSection("commands")).getKeys(false)) {
             if (!config.getBoolean("commands." + command + ".enabled")) continue;
 
             registerCommand(command, config.getStringList("commands." + command + ".aliases").toArray(new String[0]));

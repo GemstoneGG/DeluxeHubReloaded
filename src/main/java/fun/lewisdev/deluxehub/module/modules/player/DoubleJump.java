@@ -2,7 +2,6 @@ package fun.lewisdev.deluxehub.module.modules.player;
 
 import fun.lewisdev.deluxehub.DeluxeHubPlugin;
 import fun.lewisdev.deluxehub.Permissions;
-import fun.lewisdev.deluxehub.command.commands.FlyCommand;
 import fun.lewisdev.deluxehub.config.ConfigType;
 import fun.lewisdev.deluxehub.config.Messages;
 import fun.lewisdev.deluxehub.cooldown.CooldownType;
@@ -18,9 +17,9 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerToggleFlightEvent;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 public class DoubleJump extends Module {
@@ -56,41 +55,35 @@ public class DoubleJump extends Module {
         Player player = event.getPlayer();
 
         // Perform checks
-        //if (player.hasPermission(new Permission(Permissions.DOUBLE_JUMP_BYPASS.getPermission(), PermissionDefault.FALSE))) return; Useless lol
-        if (FlyCommand.allowPlayerFly.putIfAbsent(player.getUniqueId(), false) == null);
-        if (FlyCommand.allowPlayerFly.get(player.getUniqueId())) return;
+        if (player.hasPermission(new Permission(Permissions.DOUBLE_JUMP_BYPASS.getPermission(), PermissionDefault.FALSE))) return;
         else if (inDisabledWorld(player.getLocation())) return;
         else if (player.getGameMode() == GameMode.CREATIVE || player.getGameMode() == GameMode.SPECTATOR) return;
         else if (!event.isFlying()) return;
-        // All pre-checks passed, now handle double jump
+        else if (player.getWorld().getBlockAt(player.getLocation().subtract(0, 2, 0)).getType() == Material.AIR) {
+            event.setCancelled(true);
+            return;
+        }
 
+        // All pre-checks passed, now handle double jump
+        event.setCancelled(true);
 
         // Check for cooldown
-//        UUID uuid = player.getUniqueId();
-//        if (!tryCooldown(uuid, CooldownType.DOUBLE_JUMP, cooldownDelay)) {
-//            Messages.DOUBLE_JUMP_COOLDOWN.send(player, "%time%", getCooldown(uuid, CooldownType.DOUBLE_JUMP));
-//            return;
-//        }
+        UUID uuid = player.getUniqueId();
+        if (!tryCooldown(uuid, CooldownType.DOUBLE_JUMP, cooldownDelay)) {
+            Messages.DOUBLE_JUMP_COOLDOWN.send(player, "%time%", getCooldown(uuid, CooldownType.DOUBLE_JUMP));
+            return;
+        }
 
         // Execute double jump
         player.setVelocity(player.getLocation().getDirection().multiply(launch).setY(launchY));
         executeActions(player, actions);
-        event.setCancelled(true);
-        player.setAllowFlight(false);
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                player.setAllowFlight(true);
-                event.setCancelled(true);
-            }
-        }.runTaskLater(getPlugin(), 20 * cooldownDelay);
     }
 
     @EventHandler
     public void onWorldChange(PlayerChangedWorldEvent event) {
         Player player = event.getPlayer();
         if (player.getGameMode() != GameMode.CREATIVE && player.getGameMode() != GameMode.SPECTATOR && !inDisabledWorld(player.getLocation())) {
-            player.getPlayer().setAllowFlight(true);
+            Objects.requireNonNull(player.getPlayer()).setAllowFlight(true);
         }
     }
 
@@ -98,6 +91,6 @@ public class DoubleJump extends Module {
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         if (player.getGameMode() != GameMode.CREATIVE && player.getGameMode() != GameMode.SPECTATOR)
-            player.getPlayer().setAllowFlight(true);
+            Objects.requireNonNull(player.getPlayer()).setAllowFlight(true);
     }
 }

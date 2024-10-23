@@ -6,7 +6,7 @@ import java.util.List;
 public class CustomCommand {
 
     private String permission;
-    private List<String> aliases, actions;
+    private final List<String> aliases, actions;
 
     public CustomCommand(String command, List<String> actions) {
         this.aliases = new ArrayList<>();

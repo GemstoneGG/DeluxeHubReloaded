@@ -30,7 +30,7 @@ public class ModuleManager {
 
     private DeluxeHubPlugin plugin;
     private List<String> disabledWorlds;
-    private Map<ModuleType, Module> modules = new HashMap<>();
+    private final Map<ModuleType, Module> modules = new HashMap<>();
 
     public void loadModules(DeluxeHubPlugin plugin) {
         this.plugin = plugin;
