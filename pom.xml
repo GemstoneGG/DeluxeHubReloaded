@@ -6,7 +6,7 @@
 
     <groupId>fun.lewisdev</groupId>
     <artifactId>DeluxeHubReloaded-1.21-1.21.1</artifactId>
-    <version>3.6.5</version>
+    <version>3.6.5b</version>
     <packaging>jar</packaging>
 
     <name>DeluxeHubReloaded</name>
@@ -57,6 +57,7 @@
                                     <include>com.github.BGMP.CommandFramework:command-framework-bukkit</include>
                                     <include>javax.inject:javax.inject</include>
                                     <include>de.tr7zw:item-nbt-api</include>
+                                    <include>co.aikar:acf-paper</include>
                                 </includes>
                             </artifactSet>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
@@ -72,6 +73,10 @@
                                 <relocation>
                                     <pattern>de.tr7zw.changeme.nbtapi</pattern>
                                     <shadedPattern>fun.lewisdev.deluxehub.libs.nbt</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>co.aikar</pattern>
+                                    <shadedPattern>fun.lewisdev.deluxehub.libs.aikar</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>
@@ -116,6 +121,10 @@
             <id>opencollab-snapshot</id>
             <url>https://repo.opencollab.dev/main/</url>
         </repository>
+        <repository>
+            <id>aikar</id>
+            <url>https://repo.aikar.co/content/groups/aikar/</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -147,6 +156,12 @@
             <groupId>org.bstats</groupId>
             <artifactId>bstats-bukkit-lite</artifactId>
             <version>1.7</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>co.aikar</groupId>
+            <artifactId>acf-paper</artifactId>
+            <version>0.5.1-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>

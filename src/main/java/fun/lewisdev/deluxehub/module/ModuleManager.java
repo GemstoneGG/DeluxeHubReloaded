@@ -3,6 +3,7 @@ package fun.lewisdev.deluxehub.module;
 import fun.lewisdev.deluxehub.DeluxeHubPlugin;
 import fun.lewisdev.deluxehub.config.ConfigType;
 import fun.lewisdev.deluxehub.module.modules.chat.*;
+import fun.lewisdev.deluxehub.module.modules.chat.customcommands.CustomCommands;
 import fun.lewisdev.deluxehub.module.modules.hologram.HologramManager;
 import fun.lewisdev.deluxehub.module.modules.hotbar.HotbarManager;
 import fun.lewisdev.deluxehub.module.modules.player.DoubleJump;
